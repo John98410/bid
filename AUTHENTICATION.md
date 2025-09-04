@@ -94,3 +94,4 @@ MONGODB_URI=your-mongodb-connection-string
 - `jsonwebtoken` - JWT token generation/verification
 - `js-cookie` - Cookie management
 - `mongoose` - MongoDB object modeling
+
