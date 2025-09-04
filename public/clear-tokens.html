@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Tokens</title>
+</head>
+<body>
+    <h1>Clearing Authentication Tokens</h1>
+    <p>This will clear all stored authentication tokens and redirect you to login.</p>
+    
+    <script>
+        // Clear localStorage
+        localStorage.clear();
+        
+        // Clear all cookies
+        document.cookie.split(";").forEach(function(c) { 
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        
+        // Clear sessionStorage
+        sessionStorage.clear();
+        
+        alert('All tokens cleared! Redirecting to login...');
+        
+        // Redirect to login
+        window.location.href = '/login';
+    </script>
+</body>
+</html>

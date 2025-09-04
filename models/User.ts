@@ -5,6 +5,12 @@ export interface IUser extends Document {
   name: string
   email: string
   password: string
+  phoneNumber?: string
+  address?: string
+  education?: string
+  experience?: string
+  extraNote?: string
+  skills?: string[]
   createdAt: Date
   updatedAt: Date
   comparePassword(candidatePassword: string): Promise<boolean>
@@ -30,6 +36,30 @@ const UserSchema: Schema = new Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minlength: [6, 'Password must be at least 6 characters'],
+  },
+  phoneNumber: {
+    type: String,
+    default: '',
+  },
+  address: {
+    type: String,
+    default: '',
+  },
+  education: {
+    type: String,
+    default: '',
+  },
+  experience: {
+    type: String,
+    default: '',
+  },
+  extraNote: {
+    type: String,
+    default: '',
+  },
+  skills: {
+    type: [String],
+    default: [],
   },
 }, {
   timestamps: true,

@@ -17,7 +17,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify token
-    const decoded = verifyToken(token)
+    let decoded
+    try {
+      decoded = verifyToken(token)
+    } catch (error) {
+      return NextResponse.json(
+        { message: 'Invalid or expired token' },
+        { status: 401 }
+      )
+    }
     
     // Find user
     const user = await User.findById(decoded.userId)

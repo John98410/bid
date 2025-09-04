@@ -52,13 +52,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const data = await response.json()
             setUser(data.user)
           } else {
+            // Token is invalid, clear it
+            console.log('Token validation failed, clearing stored token')
             Cookies.remove('token')
             setToken(null)
+            setUser(null)
           }
         } catch (error) {
           console.error('Auth check failed:', error)
+          // Clear invalid token
           Cookies.remove('token')
           setToken(null)
+          setUser(null)
         }
       }
       setLoading(false)
