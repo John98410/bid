@@ -78,14 +78,6 @@ bidapp/
 - Feature highlights with icons
 - Call-to-action buttons to browse auctions or create new ones
 
-### Auctions Page (`/auctions`)
-- Grid layout of active auctions
-- Mock data showing auction cards with:
-  - Item title and description
-  - Current bid amount
-  - Number of bids
-  - End date
-  - Place bid button
 
 ### Create Auction Page (`/create`)
 - Comprehensive form for creating new auctions

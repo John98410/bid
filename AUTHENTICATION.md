@@ -35,7 +35,6 @@ This document describes the authentication system implemented in the BidApp appl
 ### Pages
 - `/login` - Login page with toggle to registration
 - `/register` - Registration page with toggle to login
-- `/auctions` - Protected auctions listing page
 - `/create` - Protected auction creation page
 
 ## Authentication Flow

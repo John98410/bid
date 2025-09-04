@@ -43,7 +43,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
       
       if (result.success) {
         onSuccess?.()
-        router.push('/auctions')
+        router.push('/dashboard')
       } else {
         setError(result.message)
       }

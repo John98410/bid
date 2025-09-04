@@ -28,7 +28,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
       
       if (result.success) {
         onSuccess?.()
-        router.push('/auctions')
+        router.push('/dashboard')
       } else {
         setError(result.message)
       }
