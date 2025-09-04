@@ -51,6 +51,9 @@ export default function Header() {
             <Link href="/bid-list" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
               Bid List
             </Link>
+            <Link href="/accounts" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Accounts
+            </Link>
           </nav>
 
           <div className="flex items-center space-x-4">
