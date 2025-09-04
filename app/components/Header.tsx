@@ -42,17 +42,15 @@ export default function Header() {
           </div>
           
           <nav className="flex items-center space-x-8">
-            <Link href="/" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-              Home
+            <Link href="/dashboard" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Dashboard
             </Link>
-            <Link href="/auctions" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-              Auctions
+            <Link href="/create-bid" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Create Bid
             </Link>
-            {user && (
-              <Link href="/create" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                Create Auction
-              </Link>
-            )}
+            <Link href="/bid-list" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Bid List
+            </Link>
           </nav>
 
           <div className="flex items-center space-x-4">
