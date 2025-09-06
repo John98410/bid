@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose'
 
 export interface IBid extends Document {
   userId: mongoose.Types.ObjectId
+  accountId: mongoose.Types.ObjectId
   companyName: string
   jobTitle: string
   jobDescription: string
@@ -15,6 +16,11 @@ const BidSchema: Schema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
+    required: true,
+  },
+  accountId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Account',
     required: true,
   },
   companyName: {

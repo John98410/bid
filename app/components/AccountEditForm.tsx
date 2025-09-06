@@ -12,7 +12,17 @@ interface AccountData {
   companyHistory: string
   extraNote: string
   skills: string[]
+  currentRole: string
   isPrimary: boolean
+  styleSettings?: {
+    fullNameColor?: string
+    currentRoleColor?: string
+    textColor?: string
+    bgColor?: string
+    headingFont?: string
+    textFont?: string
+    lineHeight?: string
+  }
   createdAt: string
   updatedAt: string
 }
@@ -35,7 +45,18 @@ export default function AccountEditForm({ accountData, onSave, onCancel, isSavin
     companyHistory: accountData.companyHistory || '',
     extraNote: accountData.extraNote || '',
     skills: accountData.skills || [],
+    currentRole: accountData.currentRole || '',
     isPrimary: accountData.isPrimary || false,
+  })
+
+  const [styleSettings, setStyleSettings] = useState({
+    fullNameColor: accountData.styleSettings?.fullNameColor || '#1a1a1a',
+    currentRoleColor: accountData.styleSettings?.currentRoleColor || '#4f46e5',
+    textColor: accountData.styleSettings?.textColor || '#000000',
+    bgColor: accountData.styleSettings?.bgColor || '#ffffff',
+    headingFont: accountData.styleSettings?.headingFont || 'Helvetica, sans-serif',
+    textFont: accountData.styleSettings?.textFont || 'Arial, sans-serif',
+    lineHeight: accountData.styleSettings?.lineHeight || '1.5',
   })
 
   const [skillsText, setSkillsText] = useState(accountData.skills ? accountData.skills.join(', ') : '')
@@ -47,6 +68,7 @@ export default function AccountEditForm({ accountData, onSave, onCancel, isSavin
     await onSave({
       ...formData,
       skills: skillsArray,
+      styleSettings,
     })
   }
 
@@ -112,6 +134,19 @@ export default function AccountEditForm({ accountData, onSave, onCancel, isSavin
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
+          Current Role
+        </label>
+        <input
+          type="text"
+          value={formData.currentRole}
+          onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="Enter your current job title/role"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
           Education
         </label>
         <textarea
@@ -161,6 +196,151 @@ export default function AccountEditForm({ accountData, onSave, onCancel, isSavin
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           placeholder="Any additional notes"
         />
+      </div>
+
+      {/* Style Settings Section */}
+      <div className="border-t pt-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Style Settings</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Full Name Color
+            </label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={styleSettings.fullNameColor}
+                onChange={(e) => setStyleSettings({ ...styleSettings, fullNameColor: e.target.value })}
+                className="h-10 w-16 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={styleSettings.fullNameColor}
+                onChange={(e) => setStyleSettings({ ...styleSettings, fullNameColor: e.target.value })}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="#1a1a1a"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Current Role Color
+            </label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={styleSettings.currentRoleColor}
+                onChange={(e) => setStyleSettings({ ...styleSettings, currentRoleColor: e.target.value })}
+                className="h-10 w-16 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={styleSettings.currentRoleColor}
+                onChange={(e) => setStyleSettings({ ...styleSettings, currentRoleColor: e.target.value })}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="#4f46e5"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Text Color
+            </label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={styleSettings.textColor}
+                onChange={(e) => setStyleSettings({ ...styleSettings, textColor: e.target.value })}
+                className="h-10 w-16 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={styleSettings.textColor}
+                onChange={(e) => setStyleSettings({ ...styleSettings, textColor: e.target.value })}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="#000000"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Background Color
+            </label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={styleSettings.bgColor}
+                onChange={(e) => setStyleSettings({ ...styleSettings, bgColor: e.target.value })}
+                className="h-10 w-16 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={styleSettings.bgColor}
+                onChange={(e) => setStyleSettings({ ...styleSettings, bgColor: e.target.value })}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="#ffffff"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Heading Font
+            </label>
+            <select
+              value={styleSettings.headingFont}
+              onChange={(e) => setStyleSettings({ ...styleSettings, headingFont: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="Helvetica, sans-serif">Helvetica</option>
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Times New Roman, serif">Times New Roman</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Verdana, sans-serif">Verdana</option>
+              <option value="Courier New, monospace">Courier New</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Text Font
+            </label>
+            <select
+              value={styleSettings.textFont}
+              onChange={(e) => setStyleSettings({ ...styleSettings, textFont: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Helvetica, sans-serif">Helvetica</option>
+              <option value="Times New Roman, serif">Times New Roman</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Verdana, sans-serif">Verdana</option>
+              <option value="Courier New, monospace">Courier New</option>
+            </select>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Line Height
+            </label>
+            <select
+              value={styleSettings.lineHeight}
+              onChange={(e) => setStyleSettings({ ...styleSettings, lineHeight: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="1.0">1.0 (Tight)</option>
+              <option value="1.2">1.2 (Compact)</option>
+              <option value="1.4">1.4 (Normal)</option>
+              <option value="1.5">1.5 (Comfortable)</option>
+              <option value="1.6">1.6 (Spacious)</option>
+              <option value="1.8">1.8 (Very Spacious)</option>
+              <option value="2.0">2.0 (Very Loose)</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {isCreating && (
