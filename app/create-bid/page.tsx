@@ -174,13 +174,13 @@ export default function CreateBid() {
                   onChange={handleChange}
                   required
                   rows={6}
-                  maxLength={5000}
+                  // maxLength={5000}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Enter detailed job description"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                {/* <p className="text-xs text-gray-500 mt-1">
                   {formData.jobDescription.length}/5000 characters
-                </p>
+                </p> */}
               </div>
 
             
