@@ -151,6 +151,21 @@ export default function CreateBid() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Link *
+                </label>
+                <input
+                  type="url"
+                  name="link"
+                  value={formData.link}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="https://example.com/job-posting"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Job Description *
                 </label>
                 <textarea
@@ -168,20 +183,7 @@ export default function CreateBid() {
                 </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Link *
-                </label>
-                <input
-                  type="url"
-                  name="link"
-                  value={formData.link}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="https://example.com/job-posting"
-                />
-              </div>
+            
 
               {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
