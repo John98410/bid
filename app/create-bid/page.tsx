@@ -183,7 +183,7 @@ export default function CreateBid() {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Extra Note
                 </label>
@@ -199,7 +199,7 @@ export default function CreateBid() {
                 <p className="text-xs text-gray-500 mt-1">
                   {formData.extraNote.length}/500 characters
                 </p>
-              </div>
+              </div> */}
 
 
               <div className="flex justify-end space-x-4">
