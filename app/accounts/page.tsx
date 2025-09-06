@@ -16,7 +16,17 @@ interface AccountData {
   companyHistory: string
   extraNote: string
   skills: string[]
+  currentRole: string
   isPrimary: boolean
+  styleSettings?: {
+    fullNameColor?: string
+    currentRoleColor?: string
+    textColor?: string
+    bgColor?: string
+    headingFont?: string
+    textFont?: string
+    lineHeight?: string
+  }
   createdAt: string
   updatedAt: string
 }
@@ -321,6 +331,9 @@ export default function Accounts() {
                             <div>
                               <h3 className="font-medium text-gray-900">{account.fullName}</h3>
                               <p className="text-sm text-gray-600">{account.email}</p>
+                              {account.currentRole && (
+                                <p className="text-xs text-indigo-600 font-medium">{account.currentRole}</p>
+                              )}
                               <p className="text-xs text-gray-500">
                                 {account.skills && account.skills.length > 0 
                                   ? account.skills.slice(0, 3).join(', ') + (account.skills.length > 3 ? '...' : '')
@@ -361,7 +374,9 @@ export default function Accounts() {
                         companyHistory: '',
                         extraNote: '',
                         skills: [],
+                        currentRole: '',
                         isPrimary: accounts.length === 0, // First account is primary
+                        styleSettings: {},
                         createdAt: '',
                         updatedAt: '',
                       }}
@@ -442,6 +457,11 @@ export default function Accounts() {
                         </div>
 
                         <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Current Role</label>
+                          <p className="text-gray-900">{selectedAccount.currentRole || 'Not provided'}</p>
+                        </div>
+
+                        <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Education</label>
                           <p className="text-gray-900 whitespace-pre-wrap">{selectedAccount.education || 'Not provided'}</p>
                         </div>
@@ -473,6 +493,75 @@ export default function Accounts() {
                           <label className="block text-sm font-medium text-gray-700 mb-1">Extra Notes</label>
                           <p className="text-gray-900 whitespace-pre-wrap">{selectedAccount.extraNote || 'Not provided'}</p>
                         </div>
+
+                        {/* Style Settings Display */}
+                        {selectedAccount.styleSettings && (
+                          <div className="pt-6 border-t border-gray-200">
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Style Settings</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-3">
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-sm font-medium text-gray-500 w-24">Full Name:</span>
+                                  <div className="flex items-center space-x-2">
+                                    <div 
+                                      className="w-6 h-6 rounded border border-gray-300"
+                                      style={{ backgroundColor: selectedAccount.styleSettings.fullNameColor || '#1a1a1a' }}
+                                    ></div>
+                                    <span className="text-sm text-gray-900">{selectedAccount.styleSettings.fullNameColor || '#1a1a1a'}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-sm font-medium text-gray-500 w-24">Current Role:</span>
+                                  <div className="flex items-center space-x-2">
+                                    <div 
+                                      className="w-6 h-6 rounded border border-gray-300"
+                                      style={{ backgroundColor: selectedAccount.styleSettings.currentRoleColor || '#4f46e5' }}
+                                    ></div>
+                                    <span className="text-sm text-gray-900">{selectedAccount.styleSettings.currentRoleColor || '#4f46e5'}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-sm font-medium text-gray-500 w-24">Text Color:</span>
+                                  <div className="flex items-center space-x-2">
+                                    <div 
+                                      className="w-6 h-6 rounded border border-gray-300"
+                                      style={{ backgroundColor: selectedAccount.styleSettings.textColor || '#000000' }}
+                                    ></div>
+                                    <span className="text-sm text-gray-900">{selectedAccount.styleSettings.textColor || '#000000'}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-sm font-medium text-gray-500 w-24">Background:</span>
+                                  <div className="flex items-center space-x-2">
+                                    <div 
+                                      className="w-6 h-6 rounded border border-gray-300"
+                                      style={{ backgroundColor: selectedAccount.styleSettings.bgColor || '#ffffff' }}
+                                    ></div>
+                                    <span className="text-sm text-gray-900">{selectedAccount.styleSettings.bgColor || '#ffffff'}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="space-y-3">
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-sm font-medium text-gray-500 w-24">Heading Font:</span>
+                                  <span className="text-sm text-gray-900" style={{ fontFamily: selectedAccount.styleSettings.headingFont || 'Helvetica, sans-serif' }}>
+                                    {selectedAccount.styleSettings.headingFont || 'Helvetica, sans-serif'}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-sm font-medium text-gray-500 w-24">Text Font:</span>
+                                  <span className="text-sm text-gray-900" style={{ fontFamily: selectedAccount.styleSettings.textFont || 'Arial, sans-serif' }}>
+                                    {selectedAccount.styleSettings.textFont || 'Arial, sans-serif'}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-sm font-medium text-gray-500 w-24">Line Height:</span>
+                                  <span className="text-sm text-gray-900">{selectedAccount.styleSettings.lineHeight || '1.5'}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="pt-6 border-t border-gray-200">
                           <div className="flex justify-between items-center">

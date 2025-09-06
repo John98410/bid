@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ProtectedRoute from '../components/ProtectedRoute'
 import { useAuth } from '../../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -13,12 +13,30 @@ interface BidData {
   extraNote: string
 }
 
+interface Account {
+  id: string
+  fullName: string
+  email: string
+  phoneNumber?: string
+  address?: string
+  education?: string
+  companyHistory?: string
+  extraNote?: string
+  skills?: string[]
+  isPrimary: boolean
+}
+
 export default function CreateBid() {
   const { user } = useAuth()
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
+  const [isGeneratingResume, setIsGeneratingResume] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [resumeError, setResumeError] = useState('')
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [selectedAccountId, setSelectedAccountId] = useState('')
+  const [loadingAccounts, setLoadingAccounts] = useState(true)
 
   const [formData, setFormData] = useState<BidData>({
     companyName: '',
@@ -28,45 +46,107 @@ export default function CreateBid() {
     extraNote: '',
   })
 
+  // Fetch user's accounts on component mount
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const token = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('token='))
+          ?.split('=')[1]
+
+        if (!token) return
+
+        const response = await fetch('/api/accounts', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setAccounts(data.accounts)
+          // Set primary account as default selection
+          const primaryAccount = data.accounts.find((acc: Account) => acc.isPrimary)
+          if (primaryAccount) {
+            setSelectedAccountId(primaryAccount.id)
+          } else if (data.accounts.length > 0) {
+            setSelectedAccountId(data.accounts[0].id)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch accounts:', error)
+      } finally {
+        setLoadingAccounts(false)
+      }
+    }
+
+    fetchAccounts()
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
+    setIsGeneratingResume(true)
     setError('')
     setSuccess('')
+    setResumeError('')
 
     try {
-      const response = await fetch('/api/bids', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create bid')
+      // Then generate and download resume
+      try {
+        // const selectedAccount = accounts.find(acc => acc.id === selectedAccountId)
+        const resumeResponse = await fetch('/api/bids', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jobDescription: formData.jobDescription,
+            jobTitle: formData.jobTitle,
+            companyName: formData.companyName,
+            accountId: selectedAccountId,
+            link: formData.link,
+          }),
+        })
+        console.log(resumeResponse);
+        if (resumeResponse.ok) {
+          // Create blob and download
+          const blob = await resumeResponse.blob()
+          const url = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `resume-${formData.companyName || 'job'}.pdf`
+          document.body.appendChild(a)
+          a.click()
+          window.URL.revokeObjectURL(url)
+          document.body.removeChild(a)
+          
+          setSuccess('Bid created and resume generated successfully!')
+        } else {
+          const resumeErrorData = await resumeResponse.json()
+          setResumeError(resumeErrorData.message || 'Failed to generate resume')
+          setSuccess('Bid created successfully, but resume generation failed.')
+        }
+      } catch (resumeError) {
+        console.error('Resume generation error:', resumeError)
+        setResumeError('Failed to generate resume')
+        setSuccess('Bid created successfully, but resume generation failed.')
       }
 
-      setSuccess('Bid created successfully!')
-      setFormData({
-        companyName: '',
-        jobTitle: '',
-        jobDescription: '',
-        link: '',
-        extraNote: '',
-      })
-
-      // Redirect to bid list after 2 seconds
-      setTimeout(() => {
-        router.push('/bid-list')
-      }, 2000)
-    } catch (error) {
+      // setFormData({
+      //   companyName: '',
+      //   jobTitle: '',
+      //   jobDescription: '',
+      //   link: '',
+      //   extraNote: '',
+      // })
+   } catch (error) {
       console.error('Create bid error:', error)
       setError(error instanceof Error ? error.message : 'Failed to create bid')
     } finally {
       setIsSaving(false)
+      setIsGeneratingResume(false)
     }
   }
 
@@ -87,7 +167,7 @@ export default function CreateBid() {
               Create Bid
             </h1>
             <p className="mt-2 text-sm text-gray-600">
-              Create a new bid for a job opportunity
+              Create a new bid for a job opportunity and generate a tailored resume
             </p>
           </div>
 
@@ -108,6 +188,42 @@ export default function CreateBid() {
                   {success}
                 </div>
               )}
+
+              {resumeError && (
+                <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-md">
+                  {resumeError}
+                </div>
+              )}
+
+              {/* Account Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Account *
+                </label>
+                {loadingAccounts ? (
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
+                    Loading accounts...
+                  </div>
+                ) : (
+                  <select
+                    name="selectedAccountId"
+                    value={selectedAccountId}
+                    onChange={(e) => setSelectedAccountId(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="">Select an account</option>
+                    {accounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.fullName} {account.isPrimary ? '(Primary)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Choose which account profile to use for resume generation
+                </p>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -174,13 +290,13 @@ export default function CreateBid() {
                   onChange={handleChange}
                   required
                   rows={6}
-                  maxLength={5000}
+                  // maxLength={5000}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Enter detailed job description"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                {/* <p className="text-xs text-gray-500 mt-1">
                   {formData.jobDescription.length}/5000 characters
-                </p>
+                </p> */}
               </div>
 
             
@@ -214,10 +330,10 @@ export default function CreateBid() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSaving}
+                  disabled={isSaving || !selectedAccountId}
                   className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSaving ? 'Creating...' : 'Create Bid'}
+                  {isSaving ? 'Creating Bid & Generating Resume...' : 'Create Bid & Generate Resume'}
                 </button>
               </div>
             </form>

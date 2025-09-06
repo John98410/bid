@@ -10,7 +10,17 @@ export interface IAccount extends Document {
   companyHistory?: string
   extraNote?: string
   skills?: string[]
+  currentRole?: string
   isPrimary: boolean
+  styleSettings?: {
+    fullNameColor?: string
+    currentRoleColor?: string
+    textColor?: string
+    bgColor?: string
+    headingFont?: string
+    textFont?: string
+    lineHeight?: string
+  }
   createdAt: Date
   updatedAt: Date
 }
@@ -59,9 +69,43 @@ const AccountSchema: Schema = new Schema({
     type: [String],
     default: [],
   },
+  currentRole: {
+    type: String,
+    default: '',
+  },
   isPrimary: {
     type: Boolean,
     default: false,
+  },
+  styleSettings: {
+    fullNameColor: {
+      type: String,
+      default: '#1a1a1a',
+    },
+    currentRoleColor: {
+      type: String,
+      default: '#4f46e5',
+    },
+    textColor: {
+      type: String,
+      default: '#000000',
+    },
+    bgColor: {
+      type: String,
+      default: '#ffffff',
+    },
+    headingFont: {
+      type: String,
+      default: 'Helvetica, sans-serif',
+    },
+    textFont: {
+      type: String,
+      default: 'Arial, sans-serif',
+    },
+    lineHeight: {
+      type: String,
+      default: '1.5',
+    },
   },
 }, {
   timestamps: true,
