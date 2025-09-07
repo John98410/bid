@@ -4,6 +4,9 @@ import { verifyToken } from '@/lib/jwt'
 import Bid from '@/models/Bid'
 import { generateResumePDFBuffer } from '@/lib/resume-generator'
 import Account from '@/models/Account'
+
+export const dynamic = 'force-dynamic';
+
 // GET /api/bids - Get all bids for the authenticated user with pagination and search
 export async function GET(request: NextRequest) {
   try {

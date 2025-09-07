@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb'
 import { verifyToken } from '@/lib/jwt'
 import Bid from '@/models/Bid'
 import Account from '@/models/Account'
+export const dynamic = 'force-dynamic';
 
 // GET /api/statistics - Get dashboard statistics for the authenticated user
 export async function GET(request: NextRequest) {

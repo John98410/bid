@@ -4,12 +4,17 @@ import User from '@/models/User'
 import Account from '@/models/Account'
 import { verifyToken } from '@/lib/jwt'
 
+import { headers } from 'next/headers';
+export const dynamic = 'force-dynamic';
+
 // GET - Get user's accounts
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
+    const headerList = headers();
+    const authHeader = headerList.get('authorization');
 
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')
+    const token = authHeader?.replace('Bearer ', '')
     
     if (!token) {
       return NextResponse.json(
@@ -72,7 +77,10 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB()
 
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')
+    const headerList = headers();
+    const authHeader = headerList.get('authorization');
+
+    const token = authHeader?.replace('Bearer ', '')
     
     if (!token) {
       return NextResponse.json(
@@ -158,7 +166,10 @@ export async function PUT(request: NextRequest) {
   try {
     await connectDB()
 
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')
+    const headerList = headers();
+    const authHeader = headerList.get('authorization');
+
+    const token = authHeader?.replace('Bearer ', '')
     
     if (!token) {
       return NextResponse.json(
@@ -311,7 +322,10 @@ export async function PATCH(request: NextRequest) {
   try {
     await connectDB()
 
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')
+    const headerList = headers();
+    const authHeader = headerList.get('authorization');
+
+    const token = authHeader?.replace('Bearer ', '')
     
     if (!token) {
       return NextResponse.json(
@@ -436,7 +450,10 @@ export async function DELETE(request: NextRequest) {
   try {
     await connectDB()
 
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')
+    const headerList = headers();
+    const authHeader = headerList.get('authorization');
+
+    const token = authHeader?.replace('Bearer ', '')
     
     if (!token) {
       return NextResponse.json(

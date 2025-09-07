@@ -4,6 +4,7 @@ import { verifyToken } from '@/lib/jwt'
 import Bid from '@/models/Bid'
 import { generateResumePDFBuffer } from '@/lib/resume-generator'
 import Account from '@/models/Account'
+export const dynamic = 'force-dynamic';
 
 // PUT /api/bids/report - Report a bid
 export async function PUT(request: NextRequest) {
