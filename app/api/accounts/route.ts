@@ -108,7 +108,6 @@ export async function POST(request: NextRequest) {
         { isPrimary: false }
       )
     }
-    console.log("styleSettings : ", styleSettings);
 
     // Create new account
     const account = await Account.create({
@@ -277,8 +276,6 @@ export async function PUT(request: NextRequest) {
       }
     }
     
-    console.log("styleSettings : ", styleSettings);
-    console.log("account.styleSettings : ", account.styleSettings);
 
     await account.save()
 

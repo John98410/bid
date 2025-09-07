@@ -1,13 +1,508 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import ProtectedRoute from '../components/ProtectedRoute'
 
+interface Bid {
+  id: string
+  accountId: string
+  accountName: string
+  accountRole: string
+  companyName: string
+  jobTitle: string
+  jobDescription: string
+  link: string
+  resumeFileName: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface Pagination {
+  currentPage: number
+  totalPages: number
+  totalBids: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
+}
+
+interface Account {
+  id: string
+  fullName: string
+  currentRole: string
+}
+
 export default function BidList() {
+  const [bids, setBids] = useState<Bid[]>([])
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [pagination, setPagination] = useState<Pagination>({
+    currentPage: 1,
+    totalPages: 1,
+    totalBids: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedAccountId, setSelectedAccountId] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [todayBidCount, setTodayBidCount] = useState(0)
+  const [editingBid, setEditingBid] = useState<Bid | null>(null)
+  const [editForm, setEditForm] = useState({
+    companyName: '',
+    jobTitle: '',
+    jobDescription: '',
+    link: '',
+    resumeFileName: ''
+  })
+
+  // Fetch accounts for filter dropdown
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const response = await fetch('/api/accounts')
+        if (response.ok) {
+          const data = await response.json()
+          setAccounts(data.accounts || [])
+        }
+      } catch (error) {
+        console.error('Error fetching accounts:', error)
+      }
+    }
+    fetchAccounts()
+  }, [])
+
+  // Fetch bids with current filters
+  const fetchBids = useCallback(async (page = 1, search = searchTerm, accountId = selectedAccountId) => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '10',
+        ...(search && { search }),
+        ...(accountId && { accountId })
+      })
+
+      const response = await fetch(`/api/bids?${params}`)
+      if (response.ok) {
+        const data = await response.json()
+        setBids(data.bids || [])
+        setPagination(data.pagination || pagination)
+      } else {
+        setError('Failed to fetch bids')
+      }
+    } catch (error) {
+      console.error('Error fetching bids:', error)
+      setError('Failed to fetch bids')
+    } finally {
+      setLoading(false)
+    }
+  }, [searchTerm, selectedAccountId])
+
+  // Initial load and when filters change
+  useEffect(() => {
+    fetchBids(1, searchTerm, selectedAccountId)
+  }, [searchTerm, selectedAccountId, fetchBids])
+
+  // Handle search
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    fetchBids(1, searchTerm, selectedAccountId)
+  }
+
+  // Handle pagination
+  const handlePageChange = (newPage: number) => {
+    fetchBids(newPage, searchTerm, selectedAccountId)
+  }
+
+  // Handle edit bid
+  const handleEdit = (bid: Bid) => {
+    setEditingBid(bid)
+    setEditForm({
+      companyName: bid.companyName,
+      jobTitle: bid.jobTitle,
+      jobDescription: bid.jobDescription,
+      link: bid.link,
+      resumeFileName: bid.resumeFileName
+    })
+  }
+
+  // Handle update bid
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingBid) return
+
+    try {
+      const response = await fetch('/api/bids', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: editingBid.id,
+          ...editForm
+        })
+      })
+
+      if (response.ok) {
+        setEditingBid(null)
+        fetchBids(pagination.currentPage, searchTerm, selectedAccountId)
+      } else {
+        const errorData = await response.json()
+        setError(errorData.message || 'Failed to update bid')
+      }
+    } catch (error) {
+      console.error('Error updating bid:', error)
+      setError('Failed to update bid')
+    }
+  }
+
+  // Handle delete bid
+  const handleDelete = async (bidId: string) => {
+    if (!confirm('Are you sure you want to delete this bid?')) return
+
+    try {
+      const response = await fetch(`/api/bids?id=${bidId}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        fetchBids(pagination.currentPage, searchTerm, selectedAccountId)
+      } else {
+        const errorData = await response.json()
+        setError(errorData.message || 'Failed to delete bid')
+      }
+    } catch (error) {
+      console.error('Error deleting bid:', error)
+      setError('Failed to delete bid')
+    }
+  }
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
   return (
     <ProtectedRoute>
       <div className="px-4 py-6 sm:px-0">
-        <h1 className="text-3xl font-bold text-gray-900">Bid List</h1>
-        <p className="mt-2 text-gray-600">View all your bids</p>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Bid List</h1>
+          <p className="mt-2 text-gray-600">View and manage all your bids</p>
+        </div>
+
+        {/* Search and Filter Controls */}
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <form onSubmit={handleSearch} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                  Search
+                </label>
+                <input
+                  type="text"
+                  id="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by company, job title, or description..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="accountFilter" className="block text-sm font-medium text-gray-700 mb-1">
+                  Filter by Account
+                </label>
+                <select
+                  id="accountFilter"
+                  value={selectedAccountId}
+                  onChange={(e) => setSelectedAccountId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">All Accounts</option>
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.fullName} - {account.currentRole}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-end">
+                <button
+                  type="submit"
+                  className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+
+        {/* Bids List */}
+        <div className="bg-white shadow rounded-lg">
+          {loading ? (
+            <div className="p-6 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Loading bids...</p>
+            </div>
+          ) : bids.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              <p>No bids found.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Company & Job
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Account
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Description
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {bids.map((bid) => (
+                    <tr key={bid.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{bid.companyName}</div>
+                          <div className="text-sm text-gray-500">{bid.jobTitle}</div>
+                          {bid.link && (
+                            <a
+                              href={bid.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-indigo-600 hover:text-indigo-800"
+                            >
+                              View Job Posting →
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{bid.accountName}</div>
+                          <div className="text-sm text-gray-500">{bid.accountRole}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900 max-w-xs truncate">
+                          {bid.jobDescription}
+                        </div>
+                        {bid.resumeFileName && (
+                          <div className="text-xs text-gray-500 mt-1 max-w-xs truncate">
+                            Note: {bid.resumeFileName}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(bid.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEdit(bid)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(bid.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={!pagination.hasPrevPage}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={!pagination.hasNextPage}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Showing{' '}
+                    <span className="font-medium">
+                      {((pagination.currentPage - 1) * 10) + 1}
+                    </span>{' '}
+                    to{' '}
+                    <span className="font-medium">
+                      {Math.min(pagination.currentPage * 10, pagination.totalBids)}
+                    </span>{' '}
+                    of{' '}
+                    <span className="font-medium">{pagination.totalBids}</span>{' '}
+                    results
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <button
+                      onClick={() => handlePageChange(pagination.currentPage - 1)}
+                      disabled={!pagination.hasPrevPage}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          page === pagination.currentPage
+                            ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
+                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => handlePageChange(pagination.currentPage + 1)}
+                      disabled={!pagination.hasNextPage}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Edit Modal */}
+        {editingBid && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Bid</h3>
+                <form onSubmit={handleUpdate} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Company Name
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.companyName}
+                      onChange={(e) => setEditForm({ ...editForm, companyName: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Job Title
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.jobTitle}
+                      onChange={(e) => setEditForm({ ...editForm, jobTitle: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Job Description
+                    </label>
+                    <textarea
+                      value={editForm.jobDescription}
+                      onChange={(e) => setEditForm({ ...editForm, jobDescription: e.target.value })}
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Job Link
+                    </label>
+                    <input
+                      type="url"
+                      value={editForm.link}
+                      onChange={(e) => setEditForm({ ...editForm, link: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Resume File Name
+                    </label>
+                    <input
+                      readOnly
+                      value={editForm.resumeFileName}
+                      onChange={(e) => setEditForm({ ...editForm, resumeFileName: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setEditingBid(null)}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                    >
+                      Update Bid
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </ProtectedRoute>
   )

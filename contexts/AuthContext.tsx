@@ -53,7 +53,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(data.user)
           } else {
             // Token is invalid, clear it
-            console.log('Token validation failed, clearing stored token')
             Cookies.remove('token')
             setToken(null)
             setUser(null)

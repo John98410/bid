@@ -21,7 +21,6 @@ let style = {
 export async function generateResumePDFBuffer(jobTitle: string, jobDescription: string, account: any) {
     try {
         const prompt = makePrompt(jobTitle, jobDescription, account);
-        console.log("prompt : ", prompt);
         const response = await openai.chat.completions.create({
             model: "gpt-5-nano",
             messages: [
@@ -51,7 +50,6 @@ export async function generateResumePDFBuffer(jobTitle: string, jobDescription: 
         
         // Use account's style settings if available, otherwise use default
        
-        console.log("accountStyle : ", accountStyle);
 
         const pdfBuffer = await makePDFBuffer(htmlContent, accountStyle);
         return pdfBuffer;

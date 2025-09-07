@@ -51,6 +51,10 @@ const BidSchema: Schema = new Schema({
     default: '',
     // maxlength: [5000, 'Extra note cannot be more than 5000 characters'],
   },
+  resumeFile: {
+    type: String,
+    default: '',
+  }
 }, {
   timestamps: true,
 })

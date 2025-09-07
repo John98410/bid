@@ -95,7 +95,7 @@ export default function CreateBid() {
     try {
       // Then generate and download resume
       try {
-        // const selectedAccount = accounts.find(acc => acc.id === selectedAccountId)
+        const selectedAccount = accounts.find(acc => acc.id === selectedAccountId)
         const resumeResponse = await fetch('/api/bids', {
           method: 'POST',
           headers: {
@@ -109,18 +109,29 @@ export default function CreateBid() {
             link: formData.link,
           }),
         })
-        console.log(resumeResponse);
         if (resumeResponse.ok) {
           // Create blob and download
           const blob = await resumeResponse.blob()
           const url = window.URL.createObjectURL(blob)
+          
+          // Download the PDF
           const a = document.createElement('a')
           a.href = url
-          a.download = `resume-${formData.companyName || 'job'}.pdf`
+          a.download = `${selectedAccount?.fullName}(${formData.companyName}_${formData.jobTitle || 'job'}).pdf`
           document.body.appendChild(a)
           a.click()
-          window.URL.revokeObjectURL(url)
           document.body.removeChild(a)
+          
+          // Open PDF in new tab
+          const newTab = window.open(url, '_blank')
+          if (newTab) {
+            newTab.focus()
+          }
+          
+          // Clean up URL after a delay to allow the new tab to load
+          setTimeout(() => {
+            window.URL.revokeObjectURL(url)
+          }, 1000)
           
           setSuccess('Bid created and resume generated successfully!')
         } else {
