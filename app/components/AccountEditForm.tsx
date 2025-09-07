@@ -134,7 +134,7 @@ export default function AccountEditForm({ accountData, onSave, onCancel, isSavin
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Current Role
+          Current Position
         </label>
         <input
           type="text"
@@ -225,7 +225,7 @@ export default function AccountEditForm({ accountData, onSave, onCancel, isSavin
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Current Role Color
+              Position Title Color
             </label>
             <div className="flex items-center space-x-2">
               <input

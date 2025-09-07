@@ -158,8 +158,10 @@ export async function POST(request: NextRequest) {
       jobTitle,
       jobDescription,
       link,
-      resumeFile: resumeFileName,
+      resumeFileName
     })
+    await bid.save();
+
     return new NextResponse(Buffer.from(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',

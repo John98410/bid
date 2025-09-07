@@ -235,7 +235,7 @@ export async function PUT(request: NextRequest) {
       }
       if (styleSettings.currentRoleColor && !validColorRegex.test(styleSettings.currentRoleColor)) {
         return NextResponse.json(
-          { message: 'Invalid current role color format' },
+          { message: 'Invalid Position Title Color format' },
           { status: 400 }
         )
       }
@@ -366,7 +366,7 @@ export async function PATCH(request: NextRequest) {
     }
     if (styleSettings.currentRoleColor && !validColorRegex.test(styleSettings.currentRoleColor)) {
       return NextResponse.json(
-        { message: 'Invalid current role color format' },
+        { message: 'Invalid Position Title Color format' },
         { status: 400 }
       )
     }
