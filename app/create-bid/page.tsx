@@ -27,10 +27,8 @@ interface Account {
 }
 
 export default function CreateBid() {
-  const { user } = useAuth()
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
-  const [isGeneratingResume, setIsGeneratingResume] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [resumeError, setResumeError] = useState('')
@@ -87,7 +85,6 @@ export default function CreateBid() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
-    setIsGeneratingResume(true)
     setError('')
     setSuccess('')
     setResumeError('')
@@ -117,7 +114,7 @@ export default function CreateBid() {
           // Download the PDF
           const a = document.createElement('a')
           a.href = url
-          a.download = `${selectedAccount?.fullName}(${formData.companyName}_${formData.jobTitle || 'job'}).pdf`
+          a.download = `${selectedAccount?.fullName}(${formData.companyName}_${formData.jobTitle || 'job'}_${new Date().getUTCDate()}).pdf`
           document.body.appendChild(a)
           a.click()
           document.body.removeChild(a)
@@ -156,19 +153,18 @@ export default function CreateBid() {
         setSuccess('Bid created successfully, but resume generation failed.')
       }
 
-      // setFormData({
-      //   companyName: '',
-      //   jobTitle: '',
-      //   jobDescription: '',
-      //   link: '',
-      //   extraNote: '',
-      // })
+      setFormData({
+        companyName: '',
+        jobTitle: '',
+        jobDescription: '',
+        link: '',
+        extraNote: '',
+      })
    } catch (error) {
       console.error('Create bid error:', error)
       setError(error instanceof Error ? error.message : 'Failed to create bid')
     } finally {
       setIsSaving(false)
-      setIsGeneratingResume(false)
     }
   }
 

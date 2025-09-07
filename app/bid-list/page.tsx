@@ -56,6 +56,7 @@ export default function BidList() {
     link: '',
     resumeFileName: ''
   })
+  const [success, setSuccess] = useState('')
 
   // Fetch accounts for filter dropdown
   useEffect(() => {
@@ -184,6 +185,34 @@ export default function BidList() {
     }
   }
 
+  // Handle report bid
+  const handleReport = async (e:any, bidId: string) => {
+    try {
+      let reportStatus = e.target.checked;
+      console.log(reportStatus);
+      const response = await fetch(`/api/bids/report`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: bidId,
+          reportStatus: reportStatus
+        })
+      });
+
+      if (response.ok) {
+        
+      } else {
+        const errorData = await response.json()
+        setError(errorData.message || 'Failed to report bid')
+      }
+    } catch (e) {
+      console.error('Error reporting bid:', error)
+      setError('Failed to report bid')
+    }
+  }
+
   // Handle delete bid
   const handleDelete = async (bidId: string) => {
     if (!confirm('Are you sure you want to delete this bid?')) return
@@ -226,6 +255,7 @@ export default function BidList() {
         <h1 className="text-3xl font-bold text-gray-900">Bid List</h1>
               <p className="mt-2 text-gray-600">View and manage all your bids</p>
             </div>
+
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 w-full sm:w-auto">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -233,6 +263,7 @@ export default function BidList() {
                     <span className="text-white text-sm font-medium">📅</span>
                   </div>
                 </div>
+                
                 <div className="ml-3">
                   <p className="text-sm font-medium text-indigo-900">Today's Bids</p>
                   <p className="text-lg font-bold text-indigo-600">{todayBidCount}</p>
@@ -255,7 +286,7 @@ export default function BidList() {
                   id="search"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by company, job title, or description..."
+                  placeholder="Search by company, job title, description, or resume file name..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
@@ -360,7 +391,10 @@ export default function BidList() {
                      </th>
                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                        Actions
-                     </th>
+                        </th>
+                      {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Report
+                      </th> */}
                    </tr>
                  </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -394,7 +428,7 @@ export default function BidList() {
                          </div>
                        </td>
                        <td className="px-6 py-4 whitespace-nowrap">
-                         <div className="text-sm text-gray-900 max-w-xs truncate">
+                         <div className="text-sm text-gray-900 max-w-xs">
                            {bid.resumeFileName || 'N/A'}
                          </div>
                        </td>
@@ -409,6 +443,7 @@ export default function BidList() {
                           >
                             Edit
                           </button>
+                          <span className='divider'></span>
                           <button
                             onClick={() => handleDelete(bid.id)}
                             className="text-red-600 hover:text-red-900"
@@ -417,6 +452,9 @@ export default function BidList() {
                           </button>
                         </div>
                       </td>
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <input type="checkbox" onClick={(e) => handleReport(e, bid.id)}/> Active
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>

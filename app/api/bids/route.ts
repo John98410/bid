@@ -41,7 +41,8 @@ export async function GET(request: NextRequest) {
       query.$or = [
         { companyName: { $regex: search, $options: 'i' } },
         { jobTitle: { $regex: search, $options: 'i' } },
-        { jobDescription: { $regex: search, $options: 'i' } }
+        { jobDescription: { $regex: search, $options: 'i' } },
+        { resumeFileName: { $regex: search, $options: 'i' } }
       ]
     }
     

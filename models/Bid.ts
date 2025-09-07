@@ -55,6 +55,10 @@ const BidSchema: Schema = new Schema({
   resumeFileName: {
     type: String,
     default: '',
+  },
+  reportStatus: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true,
