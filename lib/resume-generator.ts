@@ -1,6 +1,7 @@
 import { OpenAI } from 'openai';
 import puppeteer from 'puppeteer';
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
+
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,

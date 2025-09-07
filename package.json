@@ -10,7 +10,7 @@
     "vercel-build": "next build"
   },
   "dependencies": {
-    "@sparticuz/chromium": "^138.0.2",
+    "@sparticuz/chromium-min": "^138.0.2",
     "bcryptjs": "^2.4.3",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
