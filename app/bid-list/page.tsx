@@ -265,7 +265,7 @@ export default function BidList() {
                 </div>
                 
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-indigo-900">Today&apos;s Bids</p>
+                  <p className="text-sm font-medium text-indigo-900">Today Bids</p>
                   <p className="text-lg font-bold text-indigo-600">{todayBidCount}</p>
                 </div>
               </div>
