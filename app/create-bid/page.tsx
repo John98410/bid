@@ -136,8 +136,19 @@ export default function CreateBid() {
           setSuccess('Bid created and resume generated successfully!')
         } else {
           const resumeErrorData = await resumeResponse.json()
-          setResumeError(resumeErrorData.message || 'Failed to generate resume')
-          setSuccess('Bid created successfully, but resume generation failed.')
+          if (resumeResponse.status === 400) {
+            // Handle validation errors
+            if (resumeErrorData.errors && Array.isArray(resumeErrorData.errors)) {
+              setResumeError(resumeErrorData.errors.join('. '))
+            } else {
+              setResumeError(resumeErrorData.message || 'Validation failed')
+            }
+          } else if (resumeResponse.status === 409) {
+            setResumeError(resumeErrorData.message || 'A bid with this account and job link already exists.')
+          } else {
+            setResumeError(resumeErrorData.message || 'Failed to generate resume')
+          }
+          setSuccess('Bid creation failed.')
         }
       } catch (resumeError) {
         console.error('Resume generation error:', resumeError)

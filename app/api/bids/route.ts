@@ -85,6 +85,7 @@ export async function GET(request: NextRequest) {
         jobDescription: bid.jobDescription,
         link: bid.link,
         extraNote: bid.extraNote,
+        resumeFileName: bid.resumeFileName || '',
         createdAt: bid.createdAt,
         updatedAt: bid.updatedAt,
       })),
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
     
     const { companyName, jobTitle, jobDescription, link, accountId } = await request.json()
 
-    // Validation
+    // Basic validation
     if (!companyName || !jobTitle || !jobDescription || !link || !accountId) {
       return NextResponse.json(
         { message: 'Please provide company name, job title, job description, link, and account ID' },
@@ -137,27 +138,102 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Resume Generate
+    // Enhanced validation
+    const validationErrors = []
+
+    // Company name validation
+    if (companyName.trim().length < 2) {
+      validationErrors.push('Company name must be at least 2 characters long')
+    }
+    if (companyName.trim().length > 100) {
+      validationErrors.push('Company name cannot exceed 100 characters')
+    }
+
+    // Job title validation
+    if (jobTitle.trim().length < 2) {
+      validationErrors.push('Job title must be at least 2 characters long')
+    }
+    if (jobTitle.trim().length > 200) {
+      validationErrors.push('Job title cannot exceed 200 characters')
+    }
+
+    // Job description validation
+    if (jobDescription.trim().length < 10) {
+      validationErrors.push('Job description must be at least 10 characters long')
+    }
+    if (jobDescription.trim().length > 5000) {
+      validationErrors.push('Job description cannot exceed 5000 characters')
+    }
+
+    // URL validation
+    const urlPattern = /^https?:\/\/.+\..+/
+    if (!urlPattern.test(link)) {
+      validationErrors.push('Please provide a valid URL starting with http:// or https://')
+    }
+
+    // Account ID validation
+    if (!accountId.match(/^[0-9a-fA-F]{24}$/)) {
+      validationErrors.push('Invalid account ID format')
+    }
+
+    // Return validation errors if any
+    if (validationErrors.length > 0) {
+      return NextResponse.json(
+        { 
+          message: 'Validation failed',
+          errors: validationErrors
+        },
+        { status: 400 }
+      )
+    }
+
+    // Check if account exists and belongs to user
     const account = await Account.findOne({ _id: accountId, userId: decoded.userId })
     
     if (!account) {
       return NextResponse.json(
-        { message: 'Account not found' },
+        { message: 'Account not found or does not belong to you' },
         { status: 404 }
       )
     }
+
+    // Check for duplicate bid before generating resume
+    const existingBid = await Bid.findOne({
+      userId: decoded.userId,
+      accountId,
+      link
+    })
+
+    if (existingBid) {
+      return NextResponse.json(
+        { 
+          message: 'A bid with this account and job link already exists. Please use a different account or job link.',
+          existingBid: {
+            id: existingBid._id,
+            companyName: existingBid.companyName,
+            jobTitle: existingBid.jobTitle,
+            createdAt: existingBid.createdAt
+          }
+        },
+        { status: 409 }
+      )
+    }
     
+    // Generate resume only after all validations pass
     const pdfBuffer = await generateResumePDFBuffer(jobTitle, jobDescription, account)
     const resumeFileName = `${account.fullName}_${companyName.replace(/[^a-zA-Z0-9]/g, '_')}_${jobTitle.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().getUTCDate()}.pdf`;
-    const bid = await Bid.create({
+    
+    // Create bid in database
+    await Bid.create({
       userId: decoded.userId,
       accountId,
       companyName,
       jobTitle,
       jobDescription,
       link,
-      resumeFile: resumeFileName,
+      resumeFileName,
     })
+    
     return new NextResponse(Buffer.from(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
@@ -236,6 +312,7 @@ export async function PUT(request: NextRequest) {
         jobDescription: bid.jobDescription,
         link: bid.link,
         extraNote: bid.extraNote,
+        resumeFileName: bid.resumeFileName || '',
         createdAt: bid.createdAt,
         updatedAt: bid.updatedAt,
       }

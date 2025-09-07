@@ -8,6 +8,7 @@ export interface IBid extends Document {
   jobDescription: string
   link: string
   extraNote: string
+  resumeFileName: string
   createdAt: Date
   updatedAt: Date
 }
@@ -51,7 +52,7 @@ const BidSchema: Schema = new Schema({
     default: '',
     // maxlength: [5000, 'Extra note cannot be more than 5000 characters'],
   },
-  resumeFile: {
+  resumeFileName: {
     type: String,
     default: '',
   }
