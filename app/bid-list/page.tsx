@@ -74,14 +74,16 @@ export default function BidList() {
   }, [])
 
   // Fetch bids with current filters
-  const fetchBids = useCallback(async (page = 1, search = searchTerm, accountId = selectedAccountId) => {
+  const fetchBids = useCallback(async (page = 1, search = searchTerm, accountId = selectedAccountId, fromDate = dateFrom, toDate = dateTo) => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '10',
         ...(search && { search }),
-        ...(accountId && { accountId })
+        ...(accountId && { accountId }),
+        ...(fromDate && { dateFrom: fromDate }),
+        ...(toDate && { dateTo: toDate })
       })
 
       const response = await fetch(`/api/bids?${params}`)
@@ -98,22 +100,45 @@ export default function BidList() {
     } finally {
       setLoading(false)
     }
-  }, [searchTerm, selectedAccountId])
+  }, [searchTerm, selectedAccountId, dateFrom, dateTo])
+
+  // Fetch today's bid count
+  const fetchTodayBidCount = useCallback(async () => {
+    try {
+      const response = await fetch('/api/statistics')
+      if (response.ok) {
+        const data = await response.json()
+        setTodayBidCount(data.overview.todayBids || 0)
+      }
+    } catch (error) {
+      console.error('Error fetching today bid count:', error)
+    }
+  }, [])
 
   // Initial load and when filters change
   useEffect(() => {
-    fetchBids(1, searchTerm, selectedAccountId)
-  }, [searchTerm, selectedAccountId, fetchBids])
+    fetchBids(1, searchTerm, selectedAccountId, dateFrom, dateTo)
+    fetchTodayBidCount()
+  }, [searchTerm, selectedAccountId, dateFrom, dateTo, fetchBids, fetchTodayBidCount])
 
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    fetchBids(1, searchTerm, selectedAccountId)
+    fetchBids(1, searchTerm, selectedAccountId, dateFrom, dateTo)
+  }
+
+  // Handle clear filters
+  const handleClearFilters = () => {
+    setSearchTerm('')
+    setSelectedAccountId('')
+    setDateFrom('')
+    setDateTo('')
+    fetchBids(1, '', '', '', '')
   }
 
   // Handle pagination
   const handlePageChange = (newPage: number) => {
-    fetchBids(newPage, searchTerm, selectedAccountId)
+    fetchBids(newPage, searchTerm, selectedAccountId, dateFrom, dateTo)
   }
 
   // Handle edit bid
@@ -147,7 +172,8 @@ export default function BidList() {
 
       if (response.ok) {
         setEditingBid(null)
-        fetchBids(pagination.currentPage, searchTerm, selectedAccountId)
+        fetchBids(pagination.currentPage, searchTerm, selectedAccountId, dateFrom, dateTo)
+        fetchTodayBidCount()
       } else {
         const errorData = await response.json()
         setError(errorData.message || 'Failed to update bid')
@@ -168,7 +194,8 @@ export default function BidList() {
       })
 
       if (response.ok) {
-        fetchBids(pagination.currentPage, searchTerm, selectedAccountId)
+        fetchBids(pagination.currentPage, searchTerm, selectedAccountId, dateFrom, dateTo)
+        fetchTodayBidCount()
       } else {
         const errorData = await response.json()
         setError(errorData.message || 'Failed to delete bid')
@@ -194,14 +221,31 @@ export default function BidList() {
     <ProtectedRoute>
       <div className="px-4 py-6 sm:px-0">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Bid List</h1>
-          <p className="mt-2 text-gray-600">View and manage all your bids</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+        <h1 className="text-3xl font-bold text-gray-900">Bid List</h1>
+              <p className="mt-2 text-gray-600">View and manage all your bids</p>
+            </div>
+            <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 w-full sm:w-auto">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">📅</span>
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-indigo-900">Today's Bids</p>
+                  <p className="text-lg font-bold text-indigo-600">{todayBidCount}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Search and Filter Controls */}
         <div className="bg-white shadow rounded-lg p-6 mb-6">
           <form onSubmit={handleSearch} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
                   Search
@@ -233,12 +277,43 @@ export default function BidList() {
                   ))}
                 </select>
               </div>
-              <div className="flex items-end">
+              <div>
+                <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700 mb-1">
+                  From Date
+                </label>
+                <input
+                  type="date"
+                  id="dateFrom"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700 mb-1">
+                  To Date
+                </label>
+                <input
+                  type="date"
+                  id="dateTo"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="flex items-end space-x-2">
                 <button
                   type="submit"
-                  className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   Search
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                >
+                  Clear
                 </button>
               </div>
             </div>
@@ -266,25 +341,28 @@ export default function BidList() {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Company & Job
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Account
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Description
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Created
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
+                 <thead className="bg-gray-50">
+                   <tr>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                       Company & Job
+                     </th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                       Account
+                     </th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                       Description
+                     </th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                       Resume File
+                     </th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                       Created
+                     </th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                       Actions
+                     </th>
+                   </tr>
+                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {bids.map((bid) => (
                     <tr key={bid.id} className="hover:bg-gray-50">
@@ -310,19 +388,19 @@ export default function BidList() {
                           <div className="text-sm text-gray-500">{bid.accountRole}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-xs truncate">
-                          {bid.jobDescription}
-                        </div>
-                        {bid.resumeFileName && (
-                          <div className="text-xs text-gray-500 mt-1 max-w-xs truncate">
-                            Note: {bid.resumeFileName}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(bid.createdAt)}
-                      </td>
+                       <td className="px-6 py-4">
+                         <div className="text-sm text-gray-900 max-w-xs truncate">
+                           {bid.jobDescription}
+                         </div>
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap">
+                         <div className="text-sm text-gray-900 max-w-xs truncate">
+                           {bid.resumeFileName || 'N/A'}
+                         </div>
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                         {formatDate(bid.createdAt)}
+                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <button

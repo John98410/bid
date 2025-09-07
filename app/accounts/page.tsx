@@ -457,7 +457,7 @@ export default function Accounts() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Current Position</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Current Role</label>
                           <p className="text-gray-900">{selectedAccount.currentRole || 'Not provided'}</p>
                         </div>
 
@@ -511,7 +511,7 @@ export default function Accounts() {
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-3">
-                                      <span className="text-sm font-medium text-gray-500 w-24">Position Title:</span>
+                                  <span className="text-sm font-medium text-gray-500 w-24">Current Role:</span>
                                   <div className="flex items-center space-x-2">
                                     <div 
                                       className="w-6 h-6 rounded border border-gray-300"

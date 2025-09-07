@@ -49,17 +49,15 @@ export async function GET(request: NextRequest) {
       query.accountId = accountId
     }
 
-    // Add date filtering
+    // Date filtering
     if (dateFrom || dateTo) {
       query.createdAt = {}
       if (dateFrom) {
-        const fromDate = new Date(dateFrom)
-        fromDate.setHours(0, 0, 0, 0)
-        query.createdAt.$gte = fromDate
+        query.createdAt.$gte = new Date(dateFrom)
       }
       if (dateTo) {
         const toDate = new Date(dateTo)
-        toDate.setHours(23, 59, 59, 999)
+        toDate.setHours(23, 59, 59, 999) // Include the entire day
         query.createdAt.$lte = toDate
       }
     }
@@ -158,10 +156,8 @@ export async function POST(request: NextRequest) {
       jobTitle,
       jobDescription,
       link,
-      resumeFileName
+      resumeFile: resumeFileName,
     })
-    await bid.save();
-
     return new NextResponse(Buffer.from(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
