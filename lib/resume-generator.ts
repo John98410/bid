@@ -1,5 +1,6 @@
 import { OpenAI } from 'openai';
 import puppeteer from 'puppeteer';
+import chromium from '@sparticuz/chromium';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -148,6 +149,7 @@ async function makePDFBuffer(htmlContent: string, style: any) {
         `;
 
         const browser = await puppeteer.launch({
+            executablePath: await chromium.executablePath(),
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
