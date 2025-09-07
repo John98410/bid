@@ -2,6 +2,7 @@ import { OpenAI } from 'openai';
 import puppeteer from 'puppeteer';
 import chromium from '@sparticuz/chromium-min';
 
+export const runtime = 'nodejs';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -149,7 +150,11 @@ async function makePDFBuffer(htmlContent: string, style: any) {
                     </html>
         `;
 
-        const browser = await puppeteer.launch();
+        const browser = await puppeteer.launch({
+            headless: true,
+            executablePath: process.cwd() + '/.local-chrome/chrome-linux/chrome',
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
         
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
