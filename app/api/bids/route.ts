@@ -165,9 +165,7 @@ export async function POST(request: NextRequest) {
     if (jobDescription.trim().length < 10) {
       validationErrors.push('Job description must be at least 10 characters long')
     }
-    if (jobDescription.trim().length > 5000) {
-      validationErrors.push('Job description cannot exceed 5000 characters')
-    }
+
 
     // URL validation
     const urlPattern = /^https?:\/\/.+\..+/
