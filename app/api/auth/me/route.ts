@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import User from '@/models/User'
 import { verifyToken } from '@/lib/jwt'
+import { headers } from 'next/headers';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
-
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')
+    const headerList = headers();
+    const authHeader = headerList.get('authorization');
+    const token = authHeader?.replace('Bearer ', '')
     
     if (!token) {
       return NextResponse.json(
