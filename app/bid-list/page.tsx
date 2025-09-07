@@ -91,7 +91,7 @@ export default function BidList() {
       if (response.ok) {
         const data = await response.json()
         setBids(data.bids || [])
-        setPagination(data.pagination || pagination)
+        setPagination(data.pagination || { currentPage: 1, totalPages: 1, totalBids: 0 })
       } else {
         setError('Failed to fetch bids')
       }
@@ -265,7 +265,7 @@ export default function BidList() {
                 </div>
                 
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-indigo-900">Today's Bids</p>
+                  <p className="text-sm font-medium text-indigo-900">Today Bids</p>
                   <p className="text-lg font-bold text-indigo-600">{todayBidCount}</p>
                 </div>
               </div>
