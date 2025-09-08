@@ -120,10 +120,10 @@ export default function CreateBid() {
           document.body.removeChild(a)
           
           // Open PDF in new tab
-          const newTab = window.open(url, '_blank')
-          if (newTab) {
-            newTab.focus()
-          }
+          // const newTab = window.open(url, '_blank')
+          // if (newTab) {
+          //   newTab.focus()
+          // }
           
           // Clean up URL after a delay to allow the new tab to load
           setTimeout(() => {
