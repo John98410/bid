@@ -114,7 +114,7 @@ export default function CreateBid() {
           // Download the PDF
           const a = document.createElement('a')
           a.href = url
-          a.download = `${selectedAccount?.fullName}(${formData.companyName}_${formData.jobTitle || 'job'}_${new Date().getUTCDate()}).pdf`
+          a.download = `${selectedAccount?.fullName}(${formData.companyName}_${formData.jobTitle || 'job'}).pdf`
           document.body.appendChild(a)
           a.click()
           document.body.removeChild(a)
