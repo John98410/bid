@@ -35,6 +35,8 @@ export default function CreateBid() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [selectedAccountId, setSelectedAccountId] = useState('')
   const [loadingAccounts, setLoadingAccounts] = useState(true)
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null)
+  const [showResume, setShowResume] = useState(false)
 
   const [formData, setFormData] = useState<BidData>({
     companyName: '',
@@ -82,6 +84,15 @@ export default function CreateBid() {
     fetchAccounts()
   }, [])
 
+  // Cleanup blob URL on component unmount
+  useEffect(() => {
+    return () => {
+      if (resumeUrl) {
+        window.URL.revokeObjectURL(resumeUrl)
+      }
+    }
+  }, [resumeUrl])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
@@ -104,33 +115,19 @@ export default function CreateBid() {
             companyName: formData.companyName,
             accountId: selectedAccountId,
             link: formData.link,
+            flagCreateBid: false,
           }),
         })
         if (resumeResponse.ok) {
-          // Create blob and download
+          // Create blob and store URL for display
           const blob = await resumeResponse.blob()
           const url = window.URL.createObjectURL(blob)
           
-          // Download the PDF
-          const a = document.createElement('a')
-          a.href = url
-          a.download = `${selectedAccount?.fullName}(${formData.companyName}_${formData.jobTitle || 'job'}).pdf`
-          document.body.appendChild(a)
-          a.click()
-          document.body.removeChild(a)
+          // Store the URL for display instead of downloading
+          setResumeUrl(url)
+          setShowResume(true)
           
-          // Open PDF in new tab
-          // const newTab = window.open(url, '_blank')
-          // if (newTab) {
-          //   newTab.focus()
-          // }
-          
-          // Clean up URL after a delay to allow the new tab to load
-          setTimeout(() => {
-            window.URL.revokeObjectURL(url)
-          }, 1000)
-          
-          setSuccess('Bid created and resume generated successfully!')
+          setSuccess('Resume generated successfully!')
         } else {
           const resumeErrorData = await resumeResponse.json()
           if (resumeResponse.status === 400) {
@@ -153,13 +150,13 @@ export default function CreateBid() {
         setSuccess('Bid created successfully, but resume generation failed.')
       }
 
-      setFormData({
-        companyName: '',
-        jobTitle: '',
-        jobDescription: '',
-        link: '',
-        extraNote: '',
-      })
+      // setFormData({
+      //   companyName: '',
+      //   jobTitle: '',
+      //   jobDescription: '',
+      //   link: '',
+      //   extraNote: '',
+      // })
    } catch (error) {
       console.error('Create bid error:', error)
       setError(error instanceof Error ? error.message : 'Failed to create bid')
@@ -189,137 +186,140 @@ export default function CreateBid() {
             </p>
           </div>
 
-          <div className="bg-white shadow-md rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Bid Information</h2>
-            </div>
+          <div className='row'>
+            <div className='col-md-15'>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-                  {error}
+              <div className="bg-white shadow-md rounded-lg">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">Bid Information</h2>
                 </div>
-              )}
 
-              {success && (
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-                  {success}
-                </div>
-              )}
+                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+                      {error}
+                    </div>
+                  )}
 
-              {resumeError && (
-                <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-md">
-                  {resumeError}
-                </div>
-              )}
+                  {success && (
+                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+                      {success}
+                    </div>
+                  )}
 
-              {/* Account Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Account *
-                </label>
-                {loadingAccounts ? (
-                  <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                    Loading accounts...
+                  {resumeError && (
+                    <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-md">
+                      {resumeError}
+                    </div>
+                  )}
+
+                  {/* Account Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Account *
+                    </label>
+                    {loadingAccounts ? (
+                      <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
+                        Loading accounts...
+                      </div>
+                    ) : (
+                      <select
+                        name="selectedAccountId"
+                        value={selectedAccountId}
+                        onChange={(e) => setSelectedAccountId(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="">Select an account</option>
+                        {accounts.map((account) => (
+                          <option key={account.id} value={account.id}>
+                            {account.fullName} {account.isPrimary ? '(Primary)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Choose which account profile to use for resume generation
+                    </p>
                   </div>
-                ) : (
-                  <select
-                    name="selectedAccountId"
-                    value={selectedAccountId}
-                    onChange={(e) => setSelectedAccountId(e.target.value)}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="">Select an account</option>
-                    {accounts.map((account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.fullName} {account.isPrimary ? '(Primary)' : ''}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                <p className="text-xs text-gray-500 mt-1">
-                  Choose which account profile to use for resume generation
-                </p>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="companyName"
-                    value={formData.companyName}
-                    onChange={handleChange}
-                    required
-                    maxLength={100}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Enter company name"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formData.companyName.length}/100 characters
-                  </p>
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Company Name *
+                      </label>
+                      <input
+                        type="text"
+                        name="companyName"
+                        value={formData.companyName}
+                        onChange={handleChange}
+                        required
+                        maxLength={100}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Enter company name"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formData.companyName.length}/100 characters
+                      </p>
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Job Title *
-                  </label>
-                  <input
-                    type="text"
-                    name="jobTitle"
-                    value={formData.jobTitle}
-                    onChange={handleChange}
-                    required
-                    maxLength={200}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Enter job title"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formData.jobTitle.length}/200 characters
-                  </p>
-                </div>
-              </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Job Title *
+                      </label>
+                      <input
+                        type="text"
+                        name="jobTitle"
+                        value={formData.jobTitle}
+                        onChange={handleChange}
+                        required
+                        maxLength={200}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Enter job title"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formData.jobTitle.length}/200 characters
+                      </p>
+                    </div>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Link *
-                </label>
-                <input
-                  type="url"
-                  name="link"
-                  value={formData.link}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="https://example.com/job-posting"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Job Description *
-                </label>
-                <textarea
-                  name="jobDescription"
-                  value={formData.jobDescription}
-                  onChange={handleChange}
-                  required
-                  rows={6}
-                  // maxLength={5000}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter detailed job description"
-                />
-                {/* <p className="text-xs text-gray-500 mt-1">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Link *
+                    </label>
+                    <input
+                      type="url"
+                      name="link"
+                      value={formData.link}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="https://example.com/job-posting"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Job Description *
+                    </label>
+                    <textarea
+                      name="jobDescription"
+                      value={formData.jobDescription}
+                      onChange={handleChange}
+                      required
+                      rows={6}
+                      // maxLength={5000}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Enter detailed job description"
+                    />
+                    {/* <p className="text-xs text-gray-500 mt-1">
                   {formData.jobDescription.length}/5000 characters
                 </p> */}
-              </div>
+                  </div>
 
-            
 
-              {/* <div>
+
+                  {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Extra Note
                 </label>
@@ -338,24 +338,105 @@ export default function CreateBid() {
               </div> */}
 
 
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={() => router.push('/bid-list')}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving || !selectedAccountId}
-                  className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSaving ? 'Creating Bid & Generating Resume...' : 'Create Bid & Generate Resume'}
-                </button>
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => router.push('/bid-list')}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSaving || !selectedAccountId}
+                      className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSaving ? 'Generating Resume...' : 'Generate Resume'}
+                    </button>
+                  </div>
+                </form>
               </div>
-            </form>
+            </div>
+            {showResume && resumeUrl && (
+              <div className="mt-8 bg-white shadow-md rounded-lg">
+                <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-gray-900">Generated Resume</h2>
+                  <div className="space-x-2">
+                    <button
+                      onClick={async () => {
+                        const a = document.createElement('a')
+                        a.href = resumeUrl
+                        a.download = `${accounts.find(acc => acc.id === selectedAccountId)?.fullName}(${formData.companyName}_${formData.jobTitle || 'job'}).pdf`
+                        document.body.appendChild(a)
+                        a.click()
+                        document.body.removeChild(a)
+
+                        //TODO: Create bid
+                        const createBidResponse = await fetch('/api/bids', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            jobDescription: formData.jobDescription,
+                            jobTitle: formData.jobTitle,
+                            companyName: formData.companyName,
+                            accountId: selectedAccountId,
+                            link: formData.link,
+                            flagCreateBid: true,
+                            resumeFileName: `${accounts.find(acc => acc.id === selectedAccountId)?.fullName}(${formData.companyName}_${formData.jobTitle || 'job'}).pdf`,
+                          }),
+                        })
+                        if (createBidResponse.ok) {
+                          setSuccess('Bid created successfully!')
+                          setFormData({
+                            companyName: '',
+                            jobTitle: '',
+                            jobDescription: '',
+                            link: '',
+                            extraNote: '',
+                          });
+                          setShowResume(false)
+                          setResumeUrl(null)
+                        } else {
+                          setError('Failed to create bid')
+                          setShowResume(false)
+                          setResumeUrl(null)
+                        }
+                      }}
+                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      Download PDF & Create Bid
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowResume(false)
+                        if (resumeUrl) {
+                          window.URL.revokeObjectURL(resumeUrl)
+                          setResumeUrl(null)
+                        }
+                      }}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="border border-gray-300 rounded-lg overflow-hidden">
+                    <iframe
+                      src={resumeUrl}
+                      className="w-full h-[800px]"
+                      title="Generated Resume"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+
+
+          
         </div>
       </div>
     </ProtectedRoute>

@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const { companyName, jobTitle, jobDescription, link, accountId } = await request.json()
+    const { companyName, jobTitle, jobDescription, link, accountId, flagCreateBid, resumeFileName } = await request.json()
 
     // Basic validation
     if (!companyName || !jobTitle || !jobDescription || !link || !accountId) {
@@ -221,29 +221,38 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Generate resume only after all validations pass
-    const pdfBuffer = await generateResumePDFBuffer(jobTitle, jobDescription, account)
-    const resumeFileName = `${account.fullName}_${companyName.replace(/[^a-zA-Z0-9]/g, '_')}_${jobTitle.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().getUTCDate()}.pdf`;
     
-    // Create bid in database
-    await Bid.create({
-      userId: decoded.userId,
-      accountId,
-      companyName,
-      jobTitle,
-      jobDescription,
-      link,
-      resumeFileName,
-    })
-    
-    return new NextResponse(Buffer.from(pdfBuffer), {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${resumeFileName}"`,
-        'Content-Length': pdfBuffer.length.toString(),
-        'Cache-Control': 'no-store',
-      },
-    })
+    if (flagCreateBid) {
+      // Create bid in database
+      await Bid.create({
+        userId: decoded.userId,
+        accountId,
+        companyName,
+        jobTitle,
+        jobDescription,
+        link,
+        resumeFileName,
+      })
+      return NextResponse.json(
+        {
+          message: 'A bid with this account and job link already exists. Please use a different account or job link.',
+        },
+        { status: 200 }
+      )
+    } else {
+      // Generate resume only after all validations pass
+      const pdfBuffer = await generateResumePDFBuffer(jobTitle, jobDescription, account)
+      const pdfName = `${account.fullName}_${companyName.replace(/[^a-zA-Z0-9]/g, '_')}_${jobTitle.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().getUTCDate()}.pdf`;
+
+      return new NextResponse(Buffer.from(pdfBuffer), {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${pdfName}"`,
+          'Content-Length': pdfBuffer.length.toString(),
+          'Cache-Control': 'no-store',
+        },
+      })
+    }
   } catch (error) {
     console.error('Create bid error:', error)
     return NextResponse.json(

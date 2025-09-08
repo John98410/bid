@@ -428,7 +428,7 @@ export default function BidList() {
                          </div>
                        </td>
                        <td className="px-6 py-4 whitespace-nowrap">
-                         <div className="text-sm text-gray-900 max-w-xs">
+                        <div className="text-sm text-gray-900 max-w-xs truncate">
                            {bid.resumeFileName || 'N/A'}
                          </div>
                        </td>
