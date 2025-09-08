@@ -150,11 +150,7 @@ async function makePDFBuffer(htmlContent: string, style: any) {
                     </html>
         `;
 
-        const browser = await puppeteer.launch({
-            headless: true,
-            executablePath: process.cwd() + '/.local-chrome/chrome-linux/chrome',
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        });
+        const browser = await puppeteer.launch();
         
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
