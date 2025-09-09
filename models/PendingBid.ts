@@ -31,7 +31,7 @@ const PendingBidSchema: Schema = new Schema({
     type: String,
     required: [true, 'Please provide a job link'],
     validate: {
-      validator: function(v: string) {
+      validator: function (v: string) {
         return /^https?:\/\/.+/.test(v)
       },
       message: 'Please provide a valid URL'
@@ -45,6 +45,11 @@ const PendingBidSchema: Schema = new Schema({
   resumeFileName: {
     type: String,
     required: [true, 'Please provide a resume file name'],
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'in_progress', 'completed', 'cancelled'],
+    default: 'pending',
   },
 }, {
   timestamps: true,
