@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint", 
+    "lint": "next lint",
     "vercel-build": "npm run build && npx puppeteer browsers install chrome --path=.local-chrome"
   },
   "dependencies": {
@@ -21,7 +21,8 @@
     "puppeteer": "^24.19.0",
     "puppeteer-core": "^24.19.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

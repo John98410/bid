@@ -48,6 +48,12 @@ export default function Header() {
             <Link href="/create-bid" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
               Create Bid
             </Link>
+            <Link href="/generate-resume" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Resume Generator
+            </Link>
+            <Link href="/pending-bid-list" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Pending Bid List
+            </Link>
             <Link href="/bid-list" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
               Bid List
             </Link>
