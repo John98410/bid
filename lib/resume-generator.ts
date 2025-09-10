@@ -1,6 +1,5 @@
 import { OpenAI } from 'openai';
 import puppeteer from 'puppeteer';
-import chromium from '@sparticuz/chromium-min';
 
 export const runtime = 'nodejs';
 
@@ -18,7 +17,7 @@ let style = {
     h3Color: '#000000',
     h4Color: '#4e4e4eff',
     textColor: '#000000',
-    bgColor: '#FFFFFF',   
+    bgColor: '#FFFFFF',
 }
 
 export async function generateResumePDFBuffer(jobTitle: string, jobDescription: string, account: any) {
@@ -28,7 +27,7 @@ export async function generateResumePDFBuffer(jobTitle: string, jobDescription: 
             model: "gpt-5-nano",
             messages: [
                 {
-                    
+
                     role: "user",
                     content: prompt
                 }
@@ -50,9 +49,9 @@ export async function generateResumePDFBuffer(jobTitle: string, jobDescription: 
             h4Color: style.h4Color,
             headingFont: account.styleSettings.headingFont || style.headingFont,
         } : style;
-        
+
         // Use account's style settings if available, otherwise use default
-       
+
 
         const pdfBuffer = await makePDFBuffer(htmlContent, accountStyle);
         return pdfBuffer;
@@ -151,17 +150,17 @@ async function makePDFBuffer(htmlContent: string, style: any) {
         `;
 
         const browser = await puppeteer.launch();
-        
+
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
-        
+
         const pdfBuffer = await page.pdf({
             format: 'A4',
             margin: { top: '25mm', right: '25mm', bottom: '25mm', left: '25mm' },
             printBackground: true,
             displayHeaderFooter: false
         });
-        
+
         await browser.close();
         return pdfBuffer;
     } catch (error) {

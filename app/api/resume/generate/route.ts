@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const headerList = headers()
     const authHeader = headerList.get('authorization')
     const token = authHeader?.replace('Bearer ', '')
-    
+
     if (!token) {
       return NextResponse.json(
         { message: 'No token provided' },
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     // Parse request body
     const body: ResumeGenerationRequest = await request.json()
     const { accountId, excelData } = body
-    
+
     if (!accountId) {
       return NextResponse.json(
         { message: 'Account ID is required' },
@@ -67,9 +67,9 @@ export async function POST(request: NextRequest) {
 
     // Connect to database and fetch account details
     await connectDB()
-    const account = await Account.findOne({ 
-      _id: accountId, 
-      userId: decoded.userId 
+    const account = await Account.findOne({
+      _id: accountId,
+      userId: decoded.userId
     })
     if (!account) {
       return NextResponse.json(
@@ -77,24 +77,26 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       )
     }
-  
+
     const pendingBids = []
     let total = excelData.length
     let current = 0
     for (const job of excelData) {
       const existingPendingBid = await PendingBid.findOne({ link: job.link, accountId: account._id });
       if (existingPendingBid) {
+        console.log("exist pending bid, skip", job.link);
         continue
       }
       const existingBid = await Bid.findOne({ link: job.link, accountId: account._id });
       if (existingBid) {
+        console.log("exist bid, skip", job.link);
         continue
       }
       const pdfBuffer = await generateResumePDFBuffer(job.jobTitle, job.jobDescription, account)
       const pdfName = `${account.fullName}(${job.companyName.replace(/[^a-zA-Z0-9]/g, '_')}_${job.jobTitle.replace(/[^a-zA-Z0-9]/g, '_')}).pdf`;
       const filePath = path.join(process.cwd(), 'public', 'auto_generated_resumes', pdfName);
       fs.writeFileSync(filePath, pdfBuffer);
-      console.log('PDF saved to:', filePath, ` total/current = ${total}/${++current}`)
+      console.log('PDF saved to:', filePath, ` total / current = ${total}/${++current}`)
       const pendingBid = new PendingBid({
         jobTitle: job.jobTitle,
         companyName: job.companyName,
@@ -114,7 +116,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error generating resume:', error)
     return NextResponse.json(
-      { 
+      {
         success: false,
         message: 'Error generating resume',
         error: error instanceof Error ? error.message : 'Unknown error'

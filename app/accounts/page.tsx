@@ -209,11 +209,11 @@ export default function Accounts() {
       if (response.ok) {
         const updatedAccounts = accounts.filter(acc => acc.id !== accountToDelete)
         setAccounts(updatedAccounts)
-        
+
         if (selectedAccount?.id === accountToDelete) {
           setSelectedAccount(updatedAccounts.length > 0 ? updatedAccounts[0] : null)
         }
-        
+
         setSuccess('Account deleted successfully!')
       } else {
         const errorData = await response.json()
@@ -279,7 +279,7 @@ export default function Accounts() {
   return (
     <ProtectedRoute>
       <div className="px-4 py-6 sm:px-0">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Account Management</h1>
             <p className="mt-2 text-gray-600">Manage your multiple accounts and profiles</p>
@@ -320,11 +320,10 @@ export default function Accounts() {
                       {accounts.map((account) => (
                         <div
                           key={account.id}
-                          className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                            selectedAccount?.id === account.id
+                          className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedAccount?.id === account.id
                               ? 'border-indigo-500 bg-indigo-50'
                               : 'border-gray-200 hover:border-gray-300'
-                          }`}
+                            }`}
                           onClick={() => setSelectedAccount(account)}
                         >
                           <div className="flex justify-between items-start">
@@ -335,7 +334,7 @@ export default function Accounts() {
                                 <p className="text-xs text-indigo-600 font-medium">{account.currentRole}</p>
                               )}
                               <p className="text-xs text-gray-500">
-                                {account.skills && account.skills.length > 0 
+                                {account.skills && account.skills.length > 0
                                   ? account.skills.slice(0, 3).join(', ') + (account.skills.length > 3 ? '...' : '')
                                   : 'No skills added'
                                 }
@@ -503,7 +502,7 @@ export default function Accounts() {
                                 <div className="flex items-center space-x-3">
                                   <span className="text-sm font-medium text-gray-500 w-24">Full Name:</span>
                                   <div className="flex items-center space-x-2">
-                                    <div 
+                                    <div
                                       className="w-6 h-6 rounded border border-gray-300"
                                       style={{ backgroundColor: selectedAccount.styleSettings.fullNameColor || '#1a1a1a' }}
                                     ></div>
@@ -513,7 +512,7 @@ export default function Accounts() {
                                 <div className="flex items-center space-x-3">
                                   <span className="text-sm font-medium text-gray-500 w-24">Current Role:</span>
                                   <div className="flex items-center space-x-2">
-                                    <div 
+                                    <div
                                       className="w-6 h-6 rounded border border-gray-300"
                                       style={{ backgroundColor: selectedAccount.styleSettings.currentRoleColor || '#4f46e5' }}
                                     ></div>
@@ -523,7 +522,7 @@ export default function Accounts() {
                                 <div className="flex items-center space-x-3">
                                   <span className="text-sm font-medium text-gray-500 w-24">Text Color:</span>
                                   <div className="flex items-center space-x-2">
-                                    <div 
+                                    <div
                                       className="w-6 h-6 rounded border border-gray-300"
                                       style={{ backgroundColor: selectedAccount.styleSettings.textColor || '#000000' }}
                                     ></div>
@@ -533,7 +532,7 @@ export default function Accounts() {
                                 <div className="flex items-center space-x-3">
                                   <span className="text-sm font-medium text-gray-500 w-24">Background:</span>
                                   <div className="flex items-center space-x-2">
-                                    <div 
+                                    <div
                                       className="w-6 h-6 rounded border border-gray-300"
                                       style={{ backgroundColor: selectedAccount.styleSettings.bgColor || '#ffffff' }}
                                     ></div>

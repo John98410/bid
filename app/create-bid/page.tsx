@@ -122,11 +122,11 @@ export default function CreateBid() {
           // Create blob and store URL for display
           const blob = await resumeResponse.blob()
           const url = window.URL.createObjectURL(blob)
-          
+
           // Store the URL for display instead of downloading
           setResumeUrl(url)
           setShowResume(true)
-          
+
           setSuccess('Resume generated successfully!')
         } else {
           const resumeErrorData = await resumeResponse.json()
@@ -157,7 +157,7 @@ export default function CreateBid() {
       //   link: '',
       //   extraNote: '',
       // })
-   } catch (error) {
+    } catch (error) {
       console.error('Create bid error:', error)
       setError(error instanceof Error ? error.message : 'Failed to create bid')
     } finally {
@@ -175,12 +175,10 @@ export default function CreateBid() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
+      <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
+        <div className="w-full bg-white rounded-xl shadow-lg p-12">
+          <h1 className="text-4xl font-extrabold text-indigo-700 mb-6 text-center">Create Bid</h1>
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold text-gray-900">
-              Create Bid
-            </h1>
             <p className="mt-2 text-sm text-gray-600">
               Create a new bid for a job opportunity and generate a tailored resume
             </p>
@@ -434,9 +432,6 @@ export default function CreateBid() {
               </div>
             )}
           </div>
-
-
-          
         </div>
       </div>
     </ProtectedRoute>
