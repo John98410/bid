@@ -51,6 +51,7 @@ export default function BidList() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [todayBidCount, setTodayBidCount] = useState(0)
+  const [todayCount, setTodayCount] = useState(0);
   const [editingBid, setEditingBid] = useState<Bid | null>(null)
   const [editForm, setEditForm] = useState({
     companyName: '',
@@ -267,12 +268,22 @@ export default function BidList() {
       });
   }, [page]);
 
+  useEffect(() => {
+    fetch('/api/bids?today=true')
+      .then(res => res.json())
+      .then(res => setTodayCount(res.total || 0));
+  }, []);
+
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <ProtectedRoute>
       <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
         <div className="w-full bg-white rounded-xl shadow-lg p-8 mx-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-3xl font-bold text-gray-900">Bid List</h1>
+            <span className="text-gray-600 font-medium">Today Bids: <span className="font-bold text-green-600">{todayCount}</span></span>
+          </div>
           <h1 className="text-4xl font-extrabold text-indigo-700 mb-6 text-center">Bid List</h1>
 
           {/* Search and Filter Controls */}

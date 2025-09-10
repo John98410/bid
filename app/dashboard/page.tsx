@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [statistics, setStatistics] = useState<Statistics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [todayCount, setTodayCount] = useState(0)
 
   useEffect(() => {
     const fetchStatistics = async () => {
@@ -60,6 +61,12 @@ export default function Dashboard() {
     }
 
     fetchStatistics()
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/bids?today=true')
+      .then(res => res.json())
+      .then(res => setTodayCount(res.total || 0))
   }, [])
 
   const formatDate = (dateString: string) => {
@@ -114,7 +121,12 @@ export default function Dashboard() {
       <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
         <div className="w-full bg-white rounded-xl shadow-lg p-8 mt-12 mx-auto">
           <div className="mb-8">
-            <h1 className="text-4xl font-extrabold text-indigo-700 mb-6 text-center">Dashboard</h1>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-4xl font-extrabold text-indigo-700 tracking-tight mb-4 md:mb-0">Dashboard</h1>
+              <span className="text-gray-600 font-medium">
+                Today Bids: <span className="font-bold text-green-600">{todayCount}</span>
+              </span>
+            </div>
             <p className="mt-2 text-gray-600 text-center">Overview of your bidding activity</p>
           </div>
 
